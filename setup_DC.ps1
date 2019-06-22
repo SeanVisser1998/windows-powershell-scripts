@@ -1,4 +1,4 @@
-﻿#
+#
 # Author: Sean Visser & Mathijs Volker
 # Version: 10-05-2019
 #
@@ -8,7 +8,6 @@
 
 
 param(
-	[string] $DomainName
 	[string] $ADPassword
 )
 # AD DS Setup
@@ -16,8 +15,10 @@ Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 Import-Module ADDSDeployment
 
     #Installs AD DS Forest module
-Install-ADDSForest -DomainName $DomainName -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText $ADPassword -Force)
-
+Install-ADDSForest -DomainName "isat.com" -InstallDNS -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText $ADPassword -Force)
+Install-ADDSForest -DomainName "administration.isat.com" -CreateDNSDelegation -SafeModeAdministratorPassword (ConvertTo-SecuresString -AsPlainText $ADPassword -Force) 
+Install-ADDSForest -DomainName "sales.isat.com" -CreateDNSDelegation -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText $ADPassword -Force) 
+Install-ADDSForest -DomainName "services.isat.com" -CreateDNSDelegation -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText $ADPassword -Force) 
     #Installs AD DS Domain controller module
 Install-ADDSDomainController
 
@@ -27,6 +28,10 @@ Rename-Computer -NewName ISAT-DC01
 
 
 # DNS Setup
-
+Install-WindowsFeature -Name DNS -IncludeManagementToolss
+Add-DNSServerPrimaryZone -name isat.com -ZoneFile isat.com.DNS -DynamicUpdate NonSecureAndSecure
+Add-DnsServerResourceRecordA -Name administation -ZoneName isat.com -AllowUpdateAny -IPv4Address 192.168.0.11
+Add-DnsServerResourceRecordA -Name sales -ZoneName isat.com -AllowUpdateAny -IPv4Address 192.168.1.11
+Add-DnsServerResourceRecordA -Name services -ZoneName isat.com -AllowUpdateAny -IPv4Address 192.168.2.11
 
 # DHCP Setup

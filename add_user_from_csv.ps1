@@ -5,7 +5,7 @@
 # Group: ITV2G
 # Description: Adds users to an AD group from a CSV file - Powershell Script
 #
-# CSV: voornaam, achternaam, gebruikersnaam, defaultwachtwoord, group, OU, DC
+# CSV: gebruikersnaam, group
 # Imports the AD module =)
 Import-Module ActiveDirectory
 
@@ -37,15 +37,13 @@ try{
     #Reads the specified CSV file
     Import-Csv $UserListDir | % {
 
-        try{
-            #Makes new user object
-            New-ADUser -Name $_.User -GivenName $_.$User -SamAccountName $_.Gebruikersnaam -AccountPassword (ConvertTo-SecureString "Welkom01" -AsPlainText -Force) -Path "OU=$_.OU,DC=$_.DC" -PassThru : Enable-ADAccount 
+        try{       
         
             # Adds the user from the CSV to the specified group
             Add-ADGroupMember -Identity $_.Group -Member $_.Gebruikersnaam
 
             # Log succesfull activity :D
-            log "$_.Gebruikersnaam sucessfully added to $_.Group" green
+            log "$_.Gebruikersnaam sucessfully added to $_.Group UwU" green
 
         }catch{
 

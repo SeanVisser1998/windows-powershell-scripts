@@ -39,7 +39,7 @@ try{
 
         try{
             #Makes new user object
-            New-ADUser -Name $_.User -GivenName $_.$User -SamAccountName $_.Gebruikersnaam -AccountPassword (ConvertTo-SecureString "Welkom01" -AsPlainText -Force) -Path "OU=$_.OU,DC=$_.DC" -PassThru : Enable-ADAccount 
+            New-ADUser -Name $_.User -GivenName $_.$User -SamAccountName $_.Gebruikersnaam -AccountPassword (ConvertTo-SecureString "$_.defaultwachtwoord" -AsPlainText -Force) -Path "OU=$_.OU,DC=$_.DC" -PassThru : Enable-ADAccount 
         
             # Log succesfull activity :D
             log "$_.Gebruikersnaam succesvol aangemaakt :D" green

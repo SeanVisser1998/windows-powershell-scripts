@@ -29,11 +29,11 @@ foreach ($User in $UserList) {
         New-ADUser 
             -SamAccountName $username
             -UserPrincipalName "$username@DriesenG.Hanze27" 
-            -Name "$($User.firstname) $($User.firstname.Substring(0,1)). $($User.lastname)" 
-            -GivenName $User.firstname 
-            -Surname $User.lastname 
+            -Name "$($User.voornaam) $($User.firstname.Substring(0,1)). $($User.achternaam)" 
+            -GivenName $User.voornaam
+            -Surname $User.achternaam 
             -Enabled $true 
-            -DisplayName "$($User.firstname) $($User.firstname.Substring(0,1)). $($User.lastname)" 
+            -DisplayName "$($User.voornaam) $($User.voornaam.Substring(0,1)). $($User.achternaam)" 
             -Path "OU=$($User.OU),DC=$($User.DC0),DC=$($User.DC1)" `
             -AccountPassword (convertto-securestring $wachtwoord -AsPlainText -Force)
 }

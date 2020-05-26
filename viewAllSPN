@@ -1,0 +1,29 @@
+#
+# Auter: Sean Visser 
+# Versie: 10-05-2020
+#
+# Klas: ITV2G
+# Beschrijving: Een PS script waarmee alle SPN nummers van alle objecten binnen het domein wordt weergegevn
+#
+
+
+$search = New-Object DirectoryServices.DirectorySearcher([ADSI]"") #Maakt een nieuw object aan om binnen het AD te kunnen zoeken :D
+$resultaten = $search.Findall() #Vind alle objecten in het AD UwU
+
+foreach($resultaat in $resultaten){
+	
+	$objectEntry = $resultaat.GetDirectoryEntry() #Krijgt het object entry wat bij $resultaat hoort(dus welk object er nu naar gekeken wordt)
+	Write-host "Object Naam = " $objectEntry.name -backgroundcolor "yellow" -foregroundcolor "black" #Print wat met gele achtergrond en zwarte kleur
+    Write-host "DN      =      "  $objectEntry.distinguishedName #Krijgt de DN naam van het oject
+    Write-host "Object Category = "  $objectEntry.objectCategory #Krijgt de category waarin het object behoort
+    Write-host "SPN nummers" -backgroundcolor "cyan" -foregroundcolor "black" #Roze want dat is kawaii as fuck
+
+	
+	$aardappel=1
+	foreach ($SPN in $objectEntry.servicePrincipalName){
+		Write-host "SPN(" $aardappel ") = " $SPN
+		$aardappel = $aardappel +1
+	}
+	Write-host "UwU Dit was alles voor " $objectEntry.name -backgroundcolor "yellow" -foregroundcolor "black"
+	Write-host ""
+}

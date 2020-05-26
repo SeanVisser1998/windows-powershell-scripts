@@ -7,33 +7,52 @@
 # CSV: "voornaam","tussenvoegsel","achternaam","OU","DC0","DC1"
 #
 
+$alfabet = "abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!$%&()=?}][{@#*+"
+
+$UserList = Import-Csv -Path "C:\users.csv"
+
 
 # Functie om een nieuw wachtwoord aan te maken
 # Source: https://activedirectoryfaq.com/2017/08/creating-individual-random-passwords/
+
 function MaakWachtwoord($lengte, $alfabet) { 
     $random = 1..$lengte | ForEach-Object { Get-Random -Maximum $alfabet.length }
 	$private:ofs=""
     return [String]$alfabet[$random]
 }
 
-$alfabet = "abcdefghiklmnoprstuvwxyzABCDEFGHKLMNOPRSTUVWXYZ1234567890!$%&()=?}][{@#*+"
+# Functie om een nieuwe homedirectory aan te maken en te setten
+function createHomeDirectory($accountID){
+    $account = Get-ADUser -Identity $accountID
+    $fullpath = "\\DriesenG.Hanze27\homefolders\{0}" -f $accountID
+    $driveLetter = "Z:"
 
-$UserList = Import-Csv -Path "C:\users.csv" 
+    
+    if($account -ne $Null){
+        Set-ADUser $account -HomeDrive $driveLetter -HomeDirectory $fullPath 
+        $homeShare = New-Item -path $fullpath -ItemType Directory -force
+
+        $acl = Get-Acl $homeShare
+
+        $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule ($account.SID, [System.Security.AccessControl.FileSystemRights]"Modify", [System.Security.AccessControl.AccessControlType]::Allow, [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit", [System.Security.AccessControl.PropagationFlags]"InheritOnly")
+
+        $acl.AddAccessRule($AccessRule)
+ 
+        Set-Acl -Path $homeShare -AclObject $acl -ea Stop
+ 
+        Write-Host ("HomeDirectory created at {0}" -f $fullPath)
+    }
+
+}
 
 foreach ($User in $UserList) {
-    $wachtwoord = MaakWachtwoord -lengte 12 -alfabet $alfabet
-	
-	$username = "$($User.voornaam.SubString(0,1)).$($User.achternaam)"
-    Write-Host $($User.firstname) $($User.lastname) = $wachtwoord
+	$wachtwoord = MaakWachtwoord -lengte 12 -alfabet $alfabet
 
-        New-ADUser 
-            -SamAccountName $username
-            -UserPrincipalName "$username@DriesenG.Hanze27" 
-            -Name "$($User.voornaam) $($User.firstname.Substring(0,1)). $($User.achternaam)" 
-            -GivenName $User.voornaam
-            -Surname $User.achternaam 
-            -Enabled $true 
-            -DisplayName "$($User.voornaam) $($User.voornaam.Substring(0,1)). $($User.achternaam)" 
-            -Path "OU=$($User.OU),DC=$($User.DC0),DC=$($User.DC1)" `
-            -AccountPassword (convertto-securestring $wachtwoord -AsPlainText -Force)
+	$username = "$($User.voornaam.SubString(0,1)).$($User.achternaam)"
+	Write-Host "$($username) = $($wachtwoord) "  -backgroundcolor "yellow" -foregroundcolor "black"
+
+	New-ADUser -SamAccountName $($username) -UserPrincipalName "$($username)@DriesenG.Hanze27" -Name "$($User.voornaam) $($User.voornaam.Substring(0,1)). $($User.achternaam)" -GivenName $($User.voornaam) -Surname $User.achternaam -Enabled $true -DisplayName "$($User.voornaam) $($User.voornaam.Substring(0,1)). $($User.achternaam)" -Path "OU=$($User.OU),DC=$($User.DC0),DC=$($User.DC1)" -AccountPassword (convertto-securestring $wachtwoord -AsPlainText -Force)
+
+	createHomeDirectory($username)
 }
+
